@@ -3,7 +3,7 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 4000;
 
-console.log('Request received v3');
+console.log('Request received via Docker!');
 // Define a simple route
 app.get('/', (req, res) => {
     res.send('Hello, World! From Docker!');
