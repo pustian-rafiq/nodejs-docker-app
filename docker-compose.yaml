@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  demo-api:
+    build:
+      context: ./myapp
+      dockerfile: Dockerfile
+    ports:
+      - "4000:8080"
+    environment:
+      - DATABASE_URL="demo-db"
+    volumes:
+      - ./myapp:/app
+    networks:
+      - demo-network
+
+  demo-postgresql:
+    image: postgres:latest
+    environment:
+        POSTGRES_USER: demo
+        POSTGRES_PASSWORD: demo
+        POSTGRES_DB: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - demo-postgres-data:/var/lib/postgresql/data
+    networks:
+      - demo-network
+
+  demo-pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: rafiqul.pust.cse@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: demo
+    ports:
+      - "5050:80"
+    networks:
+      - demo-network
+    depends_on:
+      - demo-postgresql
+    # depends_on: demo-postgres
+
+  demo-redis:
+    image: redis/redis-stack:latest
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    networks:
+      - demo-network
+    volumes:
+      - demo-redis-data:/var/lib/redis-stack
+    environment:
+      - REDIS_ARGS=--save 900 1
+
+
+  # Redis service with Redis Stack
+  demo-rabbitmq:
+    image: rabbitmq:3.8-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - demo-network
+    volumes:
+      - demo-rabbitmq-data:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=demo
+      - RABBITMQ_DEFAULT_PASS=demo
+      - RABBITMQ_DEFAULT_VHOST=demo
+
+
+
+
+# use volume to mount the host machine changes to container and vice-versa
+# create a network for the services to communicate
+networks:
+  demo-network:
+    driver: bridge
+
+volumes:
+  demo-postgres-data:
+  demo-redis-data:
+  demo-rabbitmq-data:
+    # driver: local
+    # driver_opts:
+    #   type: none
+    #   device: /path/to/your/local/directory
+    #   o: bind
+# Note: Replace /path/to/your/local/directory with the actual path on your host machine.
+# This will create a volume that binds to the specified directory on your host machine.
+# Note: Ensure that the Dockerfile in the ./myapp directory is set up to run your application.
+# Note: The database URL in the demo-api service is set to "demo-db" which is the name of the demo-postgres service.
+# This means that the demo-api service will connect to the demo-postgres service using this name.
+# Note: The demo-postgres service is using the latest version of PostgreSQL. You can change this to a specific version if needed.
+# Note: The demo-postgres service is using the default PostgreSQL ports. You can change this if needed.
+# Note: The demo-postgres service is using the default PostgreSQL environment variables. You can change this if needed.
+# Note: The demo-api service is using the default ports. You can change this if needed.
+# Note: The demo-api service is using the default environment variables. You can change this if needed.
+# Note: The demo-api service is using the default volumes. You can change this if needed.
+# Note: The demo-api service is using the default networks. You can change this if needed.
+# Note: The demo-postgres service is using the default volumes. You can change this if needed.
+# Note: The demo-postgres service is using the default networks. You can change this if needed.
+# Note: The demo-postgres service is using the default driver. You can change this if needed.
+# Note: The demo-postgres service is using the default driver_opts. You can change this if needed.
